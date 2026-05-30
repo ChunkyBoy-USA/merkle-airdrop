@@ -5,6 +5,7 @@ import { IERC20, SafeERC20 } from "lib/openzeppelin-contracts/contracts/token/ER
 import { MerkleProof } from "lib/openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
 import { EIP712 } from "lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
 import { ECDSA } from "lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
+import { Test, console } from "forge-std/Test.sol";
 
 
 contract MerkleAirdrop is EIP712 {
@@ -40,7 +41,7 @@ contract MerkleAirdrop is EIP712 {
             revert MerkleAirdrop__AlreadyClaimed();
         }
 
-        bytes32 digest = getMessage(account, amount);
+        bytes32 digest = getMessageHash(account, amount);
 
         if (!_isValidSignature(account, digest, v, r, s)) {
             revert MerkleAirdrop__InvalidSignature();
@@ -55,7 +56,7 @@ contract MerkleAirdrop is EIP712 {
         i_airdropToken.safeTransfer(account, amount);
     }
 
-    function getMessage(address account, uint256 amount) public view returns (bytes32) {
+    function getMessageHash(address account, uint256 amount) public view returns (bytes32) {
         return _hashTypedDataV4(
             keccak256(abi.encode(MESSAGE_TYPEHASH, AirdropClaim({account: account, amount: amount})))
         );
